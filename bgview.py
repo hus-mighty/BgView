@@ -1,9 +1,9 @@
 bl_info = {
     "name": "BgView",
     "description":  "A blender Add-on to visualize the parallax effect for New Super Mario Bros. 2 background models.",
-    "author": "Huseyin the Mighty",
-    "blender": (3, 00, 0),
-    "version": (1, 0, 0),
+    "author": "hus_mighty",
+    "blender": (3, 4, 1),
+    "version": (1, 1, 0),
     "category": "Object"
 }
 
@@ -89,14 +89,41 @@ def updateParallax():
             x.constraints[1].influence = 0.0003 * parallax + 0.7
             x.constraints[0].target = scene.objects["PreviewCam_Controller"]
             x.constraints[1].target = scene.objects["PreviewCam_Controller"]
+            
+def noparallax():
+    scene = bpy.context.scene
+    for x in bpy.data.objects:
+        parallax = scene.objects[x.name].location[1]
+        if(x.name[0:6] == "joint_" and x.constraints):
+            x.constraints[0].influence = 0
+            x.constraints[1].influence = 0
+            x.constraints[0].target = scene.objects["PreviewCam_Controller"]
+            x.constraints[1].target = scene.objects["PreviewCam_Controller"]
+            
+def noxparallax():
+    scene = bpy.context.scene
+    for x in bpy.data.objects:
+        parallax = scene.objects[x.name].location[1]
+        if(x.name[0:6] == "joint_" and x.constraints):
+            x.constraints[0].influence = 0
+            x.constraints[0].target = scene.objects["PreviewCam_Controller"]
+
+            
+def noyparallax():
+    scene = bpy.context.scene
+    for x in bpy.data.objects:
+        parallax = scene.objects[x.name].location[1]
+        if(x.name[0:6] == "joint_" and x.constraints):
+            x.constraints[1].influence = 0
+            x.constraints[1].target = scene.objects["PreviewCam_Controller"]
 
 
 class mainpanel(bpy.types.Panel):
-    bl_label = "Bg Viewer"
+    bl_label = "BgView"
     bl_idname = "bgtool_main_panel"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "NSMB2"
+    bl_category = "NSMB2Hax"
     
     def draw(self, context):
         layout = self.layout
@@ -106,15 +133,21 @@ class mainpanel(bpy.types.Panel):
         row = layout.row()
         
         
-        #Name, Output, Export and Generate
         row = layout.row()
         row.operator("bgtool.createscene")
         row = layout.row()
         row.operator("bgtool.createparallax")
         row = layout.row()
+        row.operator("bgtool.resetcampos")
+        row = layout.row()
         row.operator("bgtool.updateparallax")
         row = layout.row()
-        row.operator("bgtool.resetcampos")
+        row.operator("bgtool.noparallax")
+        row = layout.row()
+        row.operator("bgtool.noxparallax")
+        row = layout.row()
+        row.operator("bgtool.noyparallax")
+
 
     
 #button operators
@@ -152,8 +185,32 @@ class resetcampos(bpy.types.Operator):
         resetCam()
         return {"FINISHED"}
 
+class noparallax(bpy.types.Operator):
+    bl_label = "All Parallax Off"
+    bl_idname = "bgtool.noparallax"
 
-classes = [mainpanel,createscene,createparallax,updateparallax,resetcampos]
+    def execute(self,context):    
+        noparallax()
+        return {"FINISHED"}
+    
+class noXparallax(bpy.types.Operator):
+    bl_label = "X Parallax Off"
+    bl_idname = "bgtool.noxparallax"
+
+    def execute(self,context):    
+        noxparallax()
+        return {"FINISHED"}
+    
+class noYparallax(bpy.types.Operator):
+    bl_label = "Y Parallax Off"
+    bl_idname = "bgtool.noyparallax"
+
+    def execute(self,context):    
+        noyparallax()
+        return {"FINISHED"}
+    
+
+classes = [mainpanel, createscene, createparallax, updateparallax, resetcampos, noparallax, noXparallax, noYparallax]
     
 def register():
     for cls in classes:
